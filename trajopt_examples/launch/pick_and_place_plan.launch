@@ -17,7 +17,7 @@
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
 
     <!-- Launch robot state publisher - may need to remap to /iiwa/joints..-->
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
     <!-- Set simulated box parameters -->
     <param name="box_side" value="$(arg box_side)"/>

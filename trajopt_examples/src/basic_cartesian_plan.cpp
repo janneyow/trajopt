@@ -202,6 +202,7 @@ int main(int argc, char** argv)
   // Get ROS Parameters
   pnh.param("plotting", plotting_, plotting_);
   pnh.param<std::string>("method", method_, method_);
+  std::cout<< "Using " << method_ << " method" << std::endl;
   pnh.param<int>("steps", steps_, steps_);
 
   // Set the robot initial state
@@ -262,4 +263,8 @@ int main(int argc, char** argv)
       *manager, *prob->GetEnv(), *prob->GetKin(), prob->GetInitTraj(), collisions);
 
   ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
+
+std::cout << "Get trajectory: " << prob->GetInitTraj() << std::endl;
+
+  ROS_INFO("RUN COMPLETE");
 }

@@ -1,0 +1,33 @@
+<launch>
+    <arg name="rviz" default="true"/>
+    <arg name="plotting" default="false" />
+    <arg name="file_write_cb" default="false" />
+    <arg name="trajopt_description" default="trajopt_description"/>
+
+
+    <param name="$(arg trajopt_description)" textfile="$(find trajopt_examples)/config/test_plan.json"/>
+
+    <!-- Load Robot Model    -->
+    <param name="robot_description"  command="$(find xacro)/xacro --inorder $(find trajopt_examples)/assets/xarm6/xarm6_with_gripper.urdf"/>
+
+    <!-- Load Robot Semantic -->
+    <param name="robot_description_semantic" textfile="$(find trajopt_examples)/assets/xarm6/xarm6_with_gripper.srdf" />
+
+    <!-- Launch GUI to drive joints   -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+    <!-- Launch robot state publisher - may need to remap to /xarm6/joints..-->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+
+    <!-- Launch planner node -->
+    <node name="test_trajopt_node" pkg="trajopt_examples" type="test_trajopt" output="screen">
+        <param name="plotting" value="$(arg plotting)"/>
+        <param name="file_write_cb" value="$(arg file_write_cb)" />
+    </node>
+
+    <!-- Launch visualization -->
+    <node if="$(arg rviz)" pkg="rviz" type="rviz" name="pick_and_place_viz"
+        args="-d $(find trajopt_examples)/config/pick_and_place_plan.rviz" />
+
+</launch>
