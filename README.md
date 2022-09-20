@@ -1,4 +1,4 @@
-# trajopt_ros
+# TrajOpt
 Integration of TrajOpt into ROS
 
 ## Solvers support
@@ -23,3 +23,119 @@ cd gh_pages
 sphinx-build . output
 ```
 Now open gh_pages/output/index.rst and remove *output* directory before commiting changes.
+
+## Installation
+- To speed up trajopt, run:
+```bash
+catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
+```
+
+When running in Ubuntu 20.04 (*Note: these have been updated in this repo*)
+1. Need to update tesseract/tesseract_rviz/src/render_tools/env/robot_link.cpp
+- Change "rviz" to Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
+2. Update compile options to c++14
+
+## Running an example
+```bash
+roslaunch trajopt_examples test_trajopt.launch 
+```
+
+## JSON Config files
+- [Industrial training/Tesseract](https://industrial-training-master.readthedocs.io/en/melodic/_source/demo3/Introduction-to-trajopt.html)
+- [Original trajopt](https://rll.berkeley.edu/trajopt/doc/sphinx_build/html/tutorial.html#move-arm-to-pose-target)
+    - *Note some original functionalities were not transferred to the tesseract implementation*
+
+Basic info:
+- **n_steps** (int): number of waypoints generated in the trajectory
+- **manip** (str): name of the robot manipulator to plan for
+- **start_fixed** (bool): whether to force the first trajectory state to be the first state given
+
+
+Init info:
+*Note start state is given by ferl_mj's config file*
+- Increase reliability with multiple initializations to decrease probaility of converging to a local minimum that is not collision-free.
+- **type**(str): type of initialization. valid values are
+    - *"stationary"*: initializes entire trajectory to current joint states of the robot. No data is needed
+    - *"given_traj"*: the entire initial trajectory must be provided in the **data** member
+    - *"joint_interpolated"*: the **endpoint** member is required. the trajectory is the joint interpolated between the current state and the endpoint
+- **data** (trajArray, optional): Array containing the initialization information
+- **endpoint** (array, optional): joint states for the end point
+
+Costs:
+- **type**
+    - **joint_vel**
+    - **collision**
+
+Constraints:
+- **type**
+    - **cart_pose**
+
+### Examples
+1. Moving arm to a joint-position target, set constraints and init_info
+```
+...
+"constraints" :
+  [
+    {
+      "type": "joint_pos",
+      "params":{
+        "targets": [0.5, -0.6, 0, 0.5, -1.3988, -0.2]
+      }
+    }
+  ],
+  "init_info" :
+  {
+    "type" : "joint_interpolated",
+    "endpoint": [0.5, -0.6, 0, 0.5, -1.3988, -0.2]
+  }
+```
+2. Moving arm to one or many pose targets, set constraints. Init info can be left as **"stationary"**
+```
+...
+ "constraints" :
+  [
+    {
+      "name" : "waypoint_cart_1",
+      "type" : "cart_pose",
+      "params" :
+      {
+        "timestep" : 0,
+        "xyz" : [0.2, 0.0, -0.112],
+        "wxyz" : [0.0, 1.0, 0.0, 0.0],
+        "link" : "link_eef",
+        "pos_coeffs" : [10, 10, 10],
+        "rot_coeffs" : [10, 10, 10]
+      }
+    },
+    {
+      "name" : "waypoint_cart_2",
+      "type" : "cart_pose",
+      "params" :
+      {
+        "timestep" : 1,
+        "xyz" : [0.2, 0.2, -0.112],
+        "wxyz" : [0.0, 1.0, 0.0, 0.0],
+        "link" : "link_eef",
+        "pos_coeffs" : [10, 10, 10],
+        "rot_coeffs" : [10, 10, 10]
+      }
+    },
+    {
+      "name" : "waypoint_cart_3",
+      "type" : "cart_pose",
+      "params" :
+      {
+        "timestep" : 2,
+        "xyz" : [0.2, 0.2, 0.112],
+        "wxyz" : [0.0, 1.0, 0.0, 0.0],
+        "link" : "link_eef",
+        "pos_coeffs" : [10, 10, 10],
+        "rot_coeffs" : [10, 10, 10]
+      }
+    }
+  ],
+  "init_info" :
+  {
+    "type" : "stationary"
+  }
+```

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(trajopt_examples)
 
-add_compile_options(-std=c++11 -Wall -Wextra)
+add_compile_options(-std=c++14 -Wall -Wextra)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -35,10 +35,6 @@ add_executable(${PROJECT_NAME}_puzzle_piece_plan src/puzzle_piece_plan.cpp)
 target_link_libraries(${PROJECT_NAME}_puzzle_piece_plan ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_puzzle_piece_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
-add_executable(${PROJECT_NAME}_car_seat_demo src/car_seat_demo.cpp)
-target_link_libraries(${PROJECT_NAME}_car_seat_demo ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_car_seat_demo PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-
 add_executable(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan src/puzzle_piece_auxillary_axes_plan.cpp)
 target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
@@ -46,9 +42,17 @@ target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE 
 add_executable(${PROJECT_NAME}_pick_and_place_plan src/pick_and_place_plan.cpp)
 target_link_libraries(${PROJECT_NAME}_pick_and_place_plan ${catkin_LIBRARIES})
 
+add_executable(test_trajopt src/test_trajopt.cpp)
+target_link_libraries(test_trajopt ${catkin_LIBRARIES})
+
 # Mark executables and/or libraries for installation
 install(
-  TARGETS ${PROJECT_NAME}_basic_cartesian_plan ${PROJECT_NAME}_glass_up_right_plan ${PROJECT_NAME}_puzzle_piece_plan ${PROJECT_NAME}_car_seat_demo ${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan
+  TARGETS 
+  ${PROJECT_NAME}_basic_cartesian_plan 
+  ${PROJECT_NAME}_glass_up_right_plan 
+  ${PROJECT_NAME}_puzzle_piece_plan 
+  ${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan
+  test_trajopt
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

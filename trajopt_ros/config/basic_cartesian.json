@@ -1,7 +1,7 @@
 {
   "basic_info" :
   {
-    "n_steps" : 5,
+    "n_steps" : 8,
     "manip" : "xarm6",
     "start_fixed" : false
   },

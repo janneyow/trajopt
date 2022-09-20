@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/ros/noetic/include/**",
+                "/home/janne/ros_ws/ferl/src/trajopt/trajopt_ros/include/**",
+                "/usr/include/**"
+                
+            ],
+            "name": "ROS",
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+
+    "version": 4
+}

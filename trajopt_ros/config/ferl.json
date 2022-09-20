@@ -1,0 +1,45 @@
+{
+  "basic_info" :
+  {
+    "n_steps" : 8,
+    "manip" : "xarm6",
+    "start_fixed" : true
+  },
+  "costs" :
+  [
+    {
+      "type" : "joint_vel",
+      "params":
+      {
+        "targets" : [0],
+        "coeffs" : [1] 
+      }
+    },
+    {
+      "type" : "collision",
+      "params" :
+      {
+        "coeffs" : [20],
+        "dist_pen" : [0.025],
+        "continuous" : false
+      }
+    }
+  ],
+  "constraints" :
+  [
+    {
+      "type": "cart_pose",
+      "params":{
+        "xyz": [0.2, 0.2, 0.2],
+        "wxyz": [0.0, 1.0, 0.0, 0.0],
+        "link": "link_eef",
+        "timestep": 1
+      }
+    }
+  ],
+  "init_info" :
+  {
+    "type" : "stationary",
+    "endpoint": [0.5, -0.6, 0, 0.5, -1.3988, -0.2]
+  }
+}
