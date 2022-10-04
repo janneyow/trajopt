@@ -3,8 +3,9 @@
     <arg name="file_write_cb" default="false" />
     <arg name="trajopt_description" default="trajopt_description"/>
 
-
-    <param name="$(arg trajopt_description)" textfile="$(find trajopt_ros)/config/trajopt.json"/>
+    <!-- loads this file when launch -->
+    <!-- <param name="$(arg trajopt_description)" textfile="$(find trajopt_ros)/config/trajopt.json"/> -->
+    <!-- <param name="$(arg trajopt_description)" value="$(find trajopt_ros)/config/trajopt.json"/> -->
 
     <!-- Load Robot Model    -->
     <param name="robot_description"  command="$(find xacro)/xacro --inorder $(find trajopt_ros)/assets/xarm6/xarm6_with_gripper.urdf"/>

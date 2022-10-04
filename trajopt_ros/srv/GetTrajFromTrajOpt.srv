@@ -3,6 +3,7 @@
 sensor_msgs/JointState start
 bool plot_traj_steps
 bool plot_final_traj
+string file_name
 ---
 # Returns a trajectory
 tesseract_msgs/Trajectory trajectory

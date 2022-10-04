@@ -53,11 +53,9 @@ bool GenTraj::GenTrajCB(trajopt_ros::GetTrajFromTrajOpt::Request &req,
         std::cout << req.start.name[i] << " " << double(req.start.position[i]) << std::endl;
     }
 
-    std::cout << "Setting state" << std::endl;
-
     env->setState(joint_states);
 
-    std::cout << "Set initial joint state" << std::endl;
+    ROS_INFO("Set initial joint state");
 
     // Send the initial trajectory for plotting
     tesseract::tesseract_ros::ROSBasicPlotting plotter(env);
@@ -70,9 +68,12 @@ bool GenTraj::GenTrajCB(trajopt_ros::GetTrajFromTrajOpt::Request &req,
     tesseract::tesseract_planning::PlannerResponse planning_response_place;
 
     // Setup problem
+    std::string file_name = req.file_name;
     trajopt::TrajOptProbPtr test_prob;
-    test_prob = jsonMethod(env);
+    test_prob = jsonMethod(env, file_name);
 
+    // std::cout << test_prob->GetVars().size() << std::endl;
+    
     // Set the optimization parameters (Most are being left as defaults)
     tesseract::tesseract_planning::TrajOptPlannerConfig config(test_prob);
     // config.params.max_iter = 50;
@@ -97,10 +98,6 @@ bool GenTraj::GenTrajCB(trajopt_ros::GetTrajFromTrajOpt::Request &req,
     ROS_INFO("Solving problem...");
     // optimizer created in solve, config stores the json file
     planner.solve(planning_response, config);
-
-    // TODO: return false based on planner status
-    std::cout << planning_response.status_description << std::endl;
-
 
     if (file_write_cb)
         stream_ptr->close();

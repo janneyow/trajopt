@@ -44,15 +44,22 @@ class GenTraj
 
 };
 
-const std::string TRAJOPT_DESCRIPTION_PARAM =
-    "trajopt_description"; /**< Default ROS parameter for trajopt description */
+// const std::string TRAJOPT_DESCRIPTION_PARAM =
+//     "trajopt_description"; /**< Default ROS parameter for trajopt description */
 
-trajopt::TrajOptProbPtr jsonMethod(tesseract::tesseract_ros::KDLEnvPtr env)
+trajopt::TrajOptProbPtr jsonMethod(tesseract::tesseract_ros::KDLEnvPtr env, std::string file_name)
 {
-    ros::NodeHandle nh;
-    std::string trajopt_config;
+    // ros::NodeHandle nh;
+    // std::string trajopt_config;
 
-    nh.getParam(TRAJOPT_DESCRIPTION_PARAM, trajopt_config);
+    // nh.getParam(TRAJOPT_DESCRIPTION_PARAM, trajopt_config);
+    std::cout << file_name << std::endl;
+    std::ifstream json_file(file_name);
+    std::ostringstream tmp;
+    tmp << json_file.rdbuf();
+    std::string trajopt_config = tmp.str();
+    
+    std::cout << trajopt_config.c_str() << std::endl;
 
     Json::Value root;
     Json::Reader reader;
@@ -65,4 +72,4 @@ trajopt::TrajOptProbPtr jsonMethod(tesseract::tesseract_ros::KDLEnvPtr env)
     return trajopt::ConstructProblem(root, env);
 }
 
-#endif 
+#endif // TRAJOPT_ACTION_SERVER_H
