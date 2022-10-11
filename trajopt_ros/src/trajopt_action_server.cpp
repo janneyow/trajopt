@@ -10,6 +10,36 @@
  */
 
 #include <trajopt_ros/trajopt_action_server.h>
+#include <Python.h>
+#include <Eigen/Eigenvalues>
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <locale>
+
+
+std::wstring widen( const std::string& str )
+{
+    std::wostringstream wstm ;
+    const std::ctype<wchar_t>& ctfacet = std::use_facet<std::ctype<wchar_t>>(wstm.getloc()) ;
+    for( size_t i=0 ; i<str.size() ; ++i ) 
+              wstm << ctfacet.widen( str[i] ) ;
+    return wstm.str() ;
+}
+
+struct DistFromPt : public sco::ScalarOfVector {
+  Eigen::VectorXd pt_;
+  DistFromPt(const Eigen::VectorXd& pt) : pt_(pt) {}
+  double operator()(const Eigen::VectorXd& x) const {
+    // std::cout << "Cost function" << std::endl;
+
+    return (x-pt_).squaredNorm();
+  }
+};
+
+// double table_cost(const Eigen::VectorXd& x){
+
+// }
 
 GenTraj::GenTraj() : pnh("~")
 {
@@ -38,6 +68,78 @@ GenTraj::GenTraj() : pnh("~")
     assert(success);
 
     ROS_INFO("[TRAJOPT_AS] Environment setup complete");
+
+    // -------------------
+       // Initialize python instance
+    const auto python_path = "/home/janne/ros_ws/ferl/devel/lib/python3/dist-packages:/home/janne/phd1/xarm/devel/lib/python3/dist-packages:/home/janne/phd1/shared_control/devel/lib/python3/dist-packages:/opt/ros/noetic/lib/python3/dist-packages:/home/janne/ros_ws/ferl/src/trajopt";
+    // const auto python_path = "/home/janne/anaconda3/envs/mj38/lib/python3.8";
+    // Py_SetPath(widen(python_path).c_str());
+    const auto python_home = "/home/janne/anaconda3/envs/mj38";
+    Py_SetPythonHome(widen(python_home).c_str());
+    const auto python_program_name = "/home/janne/anaconda3/envs/mj38/bin/python3.8";
+    Py_SetProgramName(widen(python_program_name).c_str());
+    Py_Initialize();
+
+    PyRun_SimpleString("import sys \nprint('SYS PATH:', sys.path)");
+    PyRun_SimpleString("print('SYS version:', sys.version)");
+
+    
+    // Import python module
+    PyObject* pModuleString = PyUnicode_FromString((char*)"ferl_mj.planners.trajopt_planner");
+    PyObject* pModule = PyImport_Import(pModuleString);
+    Py_DECREF(pModuleString);
+
+    PyObject *pFunc, *pArgs, *pValue;
+    if (pModule != NULL){
+        pFunc = PyObject_GetAttrString(pModule, (char*)"test_function");
+
+        if (pFunc && PyCallable_Check(pFunc))
+        {
+            // const Eigen::VectorXd x(2);
+            // x(0) = 0;
+            // x(1) = 1;
+            // std::cout << "vectorxd x:" << x << std::endl;
+            // pArgs = Py_BuildValue("(i)", x); // need to pass in waypoints
+            pArgs = PyTuple_Pack(1, 5);
+            pValue = PyObject_CallObject(pFunc, pArgs);
+            Py_DECREF(pArgs);
+
+            if (pValue != NULL)
+            {
+                std::cout << "Result of call: " << PyLong_AsDouble(pValue);
+                Py_DECREF(pValue);
+            }
+            else 
+            {
+                Py_DECREF(pFunc);
+                Py_DECREF(pModule);
+                PyErr_Print();
+                std::cout << "Call failed" << std::endl;
+
+            }
+
+        }
+        else 
+        {
+            if (PyErr_Occurred())
+                PyErr_Print();
+            std::cout << "Cannot find function" << std::endl;
+        }
+        Py_XDECREF(pFunc);
+        Py_DECREF(pModule);
+        
+    }
+    else 
+    {
+        PyErr_Print();
+        std::cout << "Failed to load module" << std::endl;
+    }
+
+    auto result = pValue;
+    std::cout << "result: " << result << std::endl;
+
+    // close python instance
+    Py_Finalize();    
 }
 
 bool GenTraj::GenTrajCB(trajopt_ros::GetTrajFromTrajOpt::Request &req,
@@ -72,7 +174,9 @@ bool GenTraj::GenTrajCB(trajopt_ros::GetTrajFromTrajOpt::Request &req,
     trajopt::TrajOptProbPtr test_prob;
     test_prob = jsonMethod(env, file_name);
 
-    // std::cout << test_prob->GetVars().size() << std::endl;
+    test_prob->addCost(sco::CostPtr(new sco::CostFromFunc(sco::ScalarOfVectorPtr(new DistFromPt(Eigen::Vector2d(2,1))), test_prob->getVars(), "table_cost")));
+
+    std::cout << test_prob->GetVars().size() << std::endl;
     
     // Set the optimization parameters (Most are being left as defaults)
     tesseract::tesseract_planning::TrajOptPlannerConfig config(test_prob);
