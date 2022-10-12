@@ -25,6 +25,20 @@ sphinx-build . output
 Now open gh_pages/output/index.rst and remove *output* directory before commiting changes.
 
 ## Installation
+- If pyconfig.h cannot be found, locate your python include path
+```bash
+find /usr/include -name pyconfig.h 
+  # returns /usr/include/python3.8/pyconfig.h
+export CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/usr/include/python3.8/" 
+  # you can add this line to your bashrc
+```
+<!-- only for PyObject -->
+<!-- - trajopt_ros depends on torch in python, set up catkin config to import torch
+- no need this, just need to set pythonhome 
+```
+catkin config -DPYTHON_EXECUTABLE=~/anaconda3/envs/mujoco/bin/python3.10 -DPYTHON_INCLUDE_DIR=~/anaconda3/envs/mujoco/include/python3.10 -DPYTHON_LIBRARY=~/anaconda3/envs/mujoco/lib/libpython3.10.so -DCMAKE_BUILD_TYPE=Release
+``` -->
+
 - To speed up trajopt, run:
 ```bash
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
@@ -139,3 +153,10 @@ Constraints:
     "type" : "stationary"
   }
 ```
+
+## Trajoptpy
+Uses the Boost Python library to generate python bindings.
+- [Reference](http://wiki.ros.org/ROS/Tutorials/Using%20a%20C%2B%2B%20class%20in%20Python) for the CMakeLists.txt 
+- trajoptpy.cpp contains the wrapper
+
+TODO: figure out how to expore trajoptpy as a library

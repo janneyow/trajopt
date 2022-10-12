@@ -13,6 +13,7 @@
   <depend>trajopt_sco</depend>
   <depend>trajopt_utils</depend>
   <depend>tesseract_core</depend>
+  <depend>tesseract_ros</depend>
   <depend>roscpp</depend>
 
   <test_depend>gtest</test_depend>

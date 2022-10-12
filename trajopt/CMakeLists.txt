@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   trajopt_sco
   trajopt_utils
   tesseract_core
+  tesseract_ros
   roscpp
 )
 
@@ -32,6 +33,8 @@ set(TRAJOPT_SOURCE_FILES
     src/file_write_callback.cpp
 )
 
+## Uncomment this if the package has a setup.py.
+catkin_python_setup()
 catkin_package(
   INCLUDE_DIRS
     include
@@ -43,6 +46,7 @@ catkin_package(
     trajopt_sco
     trajopt_utils
     tesseract_core
+    tesseract_ros
     roscpp
   DEPENDS
     EIGEN3
@@ -52,15 +56,26 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIRS}
   SYSTEM ${EIGEN3_INCLUDE_DIRS}
   SYSTEM ${Boost_INCLUDE_DIRS}
   SYSTEM ${JSONCPP_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME} ${TRAJOPT_SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} ${Boost_SYSTEM_LIBRARY} ${JSONCPP_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${JSONCPP_LIBRARIES} ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
+# Create trajoptpy library
+# Set up the python exports.
+add_library(ctrajoptpy SHARED src/trajoptpy.cpp)
+set_target_properties(ctrajoptpy PROPERTIES
+  PREFIX ""
+  LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
+)
+target_link_libraries(ctrajoptpy ${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARIES}) 
+
+# Install
 # Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -74,6 +89,11 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.hxx"
   PATTERN ".svn" EXCLUDE
  )
+
+install(TARGETS ctrajoptpy
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
+)
 
 if (CATKIN_ENABLE_TESTING)
 
