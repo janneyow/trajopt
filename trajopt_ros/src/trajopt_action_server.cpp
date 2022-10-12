@@ -32,6 +32,7 @@ struct DistFromPt : public sco::ScalarOfVector {
   DistFromPt(const Eigen::VectorXd& pt) : pt_(pt) {}
   double operator()(const Eigen::VectorXd& x) const {
     // std::cout << "Cost function" << std::endl;
+    std::cout << "returns: " << (x-pt_).squaredNorm() << std::endl;
 
     return (x-pt_).squaredNorm();
   }
@@ -94,14 +95,18 @@ GenTraj::GenTraj() : pnh("~")
         pFunc = PyObject_GetAttrString(pModule, (char*)"test_function");
 
         if (pFunc && PyCallable_Check(pFunc))
+        // error inside here -> to debug tmw
         {
             // const Eigen::VectorXd x(2);
             // x(0) = 0;
             // x(1) = 1;
             // std::cout << "vectorxd x:" << x << std::endl;
-            // pArgs = Py_BuildValue("(i)", x); // need to pass in waypoints
-            pArgs = PyTuple_Pack(1, 5);
+            pArgs = Py_BuildValue("(i)", 5); // need to pass in waypoints
+            // pArgs = PyTuple_Pack(1, 5);
+            std::cout << "Set pargs" << std::endl;
+            // PyTuple_SetItem(pArgs, 0, )
             pValue = PyObject_CallObject(pFunc, pArgs);
+            std::cout << "Called function" << std::endl;
             Py_DECREF(pArgs);
 
             if (pValue != NULL)
@@ -114,7 +119,7 @@ GenTraj::GenTraj() : pnh("~")
                 Py_DECREF(pFunc);
                 Py_DECREF(pModule);
                 PyErr_Print();
-                std::cout << "Call failed" << std::endl;
+                std::cout << "Function call failed" << std::endl;
 
             }
 
@@ -138,8 +143,11 @@ GenTraj::GenTraj() : pnh("~")
     auto result = pValue;
     std::cout << "result: " << result << std::endl;
 
+}
+
+GenTraj::~GenTraj(){
     // close python instance
-    Py_Finalize();    
+    Py_Finalize();
 }
 
 bool GenTraj::GenTrajCB(trajopt_ros::GetTrajFromTrajOpt::Request &req,
@@ -174,9 +182,9 @@ bool GenTraj::GenTrajCB(trajopt_ros::GetTrajFromTrajOpt::Request &req,
     trajopt::TrajOptProbPtr test_prob;
     test_prob = jsonMethod(env, file_name);
 
+    std::cout << "test_prob->GetVars() size: " << test_prob->GetVars().size() << std::endl;
     test_prob->addCost(sco::CostPtr(new sco::CostFromFunc(sco::ScalarOfVectorPtr(new DistFromPt(Eigen::Vector2d(2,1))), test_prob->getVars(), "table_cost")));
 
-    std::cout << test_prob->GetVars().size() << std::endl;
     
     // Set the optimization parameters (Most are being left as defaults)
     tesseract::tesseract_planning::TrajOptPlannerConfig config(test_prob);

@@ -24,6 +24,7 @@ class GenTraj
 {
     public:
         GenTraj();
+        ~GenTraj();
 
     private:
         bool GenTrajCB(trajopt_ros::GetTrajFromTrajOpt::Request &req,
