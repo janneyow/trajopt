@@ -159,4 +159,3 @@ Uses the Boost Python library to generate python bindings.
 - [Reference](http://wiki.ros.org/ROS/Tutorials/Using%20a%20C%2B%2B%20class%20in%20Python) for the CMakeLists.txt 
 - trajoptpy.cpp contains the wrapper
 
-TODO: figure out how to expore trajoptpy as a library

@@ -349,6 +349,8 @@ TrajOptResult::TrajOptResult(sco::OptResults& opt, TrajOptProb& prob)
   }
 
   traj = getTraj(opt.x, prob.GetVars());
+
+  status = opt.status;
 }
 
 TrajOptResultPtr OptimizeProblem(TrajOptProbPtr prob, const tesseract::BasicPlottingPtr plotter)

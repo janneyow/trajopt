@@ -1,16 +1,18 @@
 #include <trajopt_utils/macros.h>
 TRAJOPT_IGNORE_WARNINGS_PUSH
 #include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
 TRAJOPT_IGNORE_WARNINGS_POP
 
 #include <trajopt_sco/modeling_utils.hpp>
 // #include <trajopt_ros/trajopt/collision_checker.hpp>
 // #include <tesseract_core/basic_kin.h>
-# include <trajopt/collision_terms.hpp>
+#include <trajopt/collision_terms.hpp>
 #include <trajopt/numpy_utils.hpp>
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/macros.h>
 #include <tesseract_ros/kdl/kdl_env.h>
+#include <tesseract_ros/ros_basic_plotting.h>
 
 
 #include <urdf_parser/urdf_parser.h>
@@ -48,7 +50,7 @@ class PyTrajOptProb
 {
 public:
     TrajOptProbPtr m_prob;
-    PyTrajOptProb(TrajOptProbPtr prob) : m_prob(prob) {}
+    PyTrajOptProb(TrajOptProbPtr prob) : m_prob(prob){}
     // py::list GetDOFIndices()
     // {
     //   tesseract::BasicKinConstPtr kin = boost::dynamic_pointer_cast<tesseract::BasicKinConstPtr>(m_prob->GetKin());
@@ -167,13 +169,12 @@ void PyTrajOptProb::AddConstraint2(py::object f,
                                           name));
     m_prob->addConstraint(c);
 }
-// TODO: add this into tesseract's trajopt
-// void PyTrajOptProb::AddCost1(py::object f, py::list ijs, const std::string& name)
-// {
-//   sco::VarVector vars = _GetVars(ijs, m_prob->GetVars());
-//   sco::CostPtr c(new TrajOptCostFromErrFunc(sco::ScalarOfVectorPtr(new ScalarFuncFromPy(f)), vars, "f"));
-//   m_prob->addCost(c);
-// }
+void PyTrajOptProb::AddCost1(py::object f, py::list ijs, const std::string& name)
+{
+  sco::VarVector vars = _GetVars(ijs, m_prob->GetVars());
+  sco::CostPtr c(new sco::CostFromFunc(sco::ScalarOfVectorPtr(new ScalarFuncFromPy(f)), vars, name));
+  m_prob->addCost(c);
+}
 void PyTrajOptProb::AddErrCost1(py::object f, py::list ijs, const std::string& typestr, const std::string& name)
 {
     sco::PenaltyType type = _GetPenaltyType(typestr);
@@ -204,34 +205,37 @@ Json::Value readJsonFile(const std::string& doc)
     return root;
 }
 
-PyTrajOptProb PyConstructProblem(const std::string& json_string)
-// int PyConstructProblem(const std::string& json_string)
-{
-  // TODO take in python environment and convert it to cpp
-  // need to write a python class similar to the BasicEnv class
-  
-  // Initialize the environment
-  std::string urdf_file_path = "/home/janne/ros_ws/ferl/src/trajopt/trajopt_ros/assets/xarm6/xarm6_with_gripper.urdf";
-  std::string srdf_file_path = "/home/janne/ros_ws/ferl/src/trajopt/trajopt_ros/assets/xarm6/xarm6_with_gripper.srdf";
+PyTrajOptProb PyConstructProblem(const std::string& json_string, py::list pos, py::list joint_names)
+{    
+    // Initialize the environment
+    std::string urdf_file_path = "/home/janne/ros_ws/ferl/src/trajopt/trajopt_ros/assets/xarm6/xarm6_with_gripper.urdf";
+    std::string srdf_file_path = "/home/janne/ros_ws/ferl/src/trajopt/trajopt_ros/assets/xarm6/xarm6_with_gripper.srdf";
 
-  // for env setup, to write python class to replace this
-  urdf::ModelInterfaceSharedPtr urdf_model;
-  urdf_model = urdf::parseURDFFile(urdf_file_path);
-  srdf::ModelSharedPtr srdf_model = srdf::ModelSharedPtr(new srdf::Model);
-  srdf_model->initFile(*urdf_model, srdf_file_path);
-  tesseract::tesseract_ros::KDLEnvPtr env =  tesseract::tesseract_ros::KDLEnvPtr(new tesseract::tesseract_ros::KDLEnv);
+    // for env setup, to write python class to replace this
+    urdf::ModelInterfaceSharedPtr urdf_model;
+    urdf_model = urdf::parseURDFFile(urdf_file_path);
+    srdf::ModelSharedPtr srdf_model = srdf::ModelSharedPtr(new srdf::Model);
+    srdf_model->initFile(*urdf_model, srdf_file_path);
+    tesseract::tesseract_ros::KDLEnvPtr env =  tesseract::tesseract_ros::KDLEnvPtr(new tesseract::tesseract_ros::KDLEnv);
 
-  assert(urdf_model != nullptr);
-  assert(env != nullptr);
-  bool success = env->init(urdf_model, srdf_model);
-  assert(success);
+    assert(urdf_model != nullptr);
+    assert(env != nullptr);
+    bool success = env->init(urdf_model, srdf_model);
+    assert(success);
 
-  std::cout <<("[TRAJOPT_AS] Environment setup complete") << std::endl;
+    // Set initial joint states
+    std::unordered_map<std::string, double> joint_states;
+    for (int i = 0; i < len(joint_names); i++)
+    {
+        std::string name = py::extract<std::string>(joint_names[i]);
+        joint_states[name] = py::extract<double>(pos[i]);
+    }
 
-  // EnvironmentBasePtr cpp_env = GetCppEnv(py_env);
-  Json::Value json_root = readJsonFile(json_string);
-  TrajOptProbPtr cpp_prob = ConstructProblem(json_root, env);
-  return PyTrajOptProb(cpp_prob);
+    env->setState(joint_states);
+
+    Json::Value json_root = readJsonFile(json_string);
+    TrajOptProbPtr cpp_prob = ConstructProblem(json_root, env);
+    return PyTrajOptProb(cpp_prob);
 }
 
 // not used
@@ -247,47 +251,51 @@ const std::string GetJsonFile(const std::string file_name){
     return trajopt_config;
 }
 
-// void SetInteractive(py::object b) { gInteractive = py::extract<bool>(b); }
-
 class PyTrajOptResult
 {
 public:
-  PyTrajOptResult(TrajOptResultPtr result) : m_result(result) {}
-  TrajOptResultPtr m_result;
-  py::object GetCosts()
-  {
-    py::list out;
-    int n_costs = m_result->cost_names.size();
-    for (int i = 0; i < n_costs; ++i)
+    PyTrajOptResult(TrajOptResultPtr result) : m_result(result) {}
+    TrajOptResultPtr m_result;
+    py::object GetCosts()
     {
-      out.append(py::make_tuple(m_result->cost_names[i], m_result->cost_vals[i]));
+        py::list out;
+        int n_costs = m_result->cost_names.size();
+        for (int i = 0; i < n_costs; ++i)
+        {
+        out.append(py::make_tuple(m_result->cost_names[i], m_result->cost_vals[i]));
+        }
+        return out;
     }
-    return out;
-  }
-  py::object GetConstraints()
-  {
-    py::list out;
-    int n_cnts = m_result->cnt_names.size();
-    for (int i = 0; i < n_cnts; ++i)
+    py::object GetConstraints()
     {
-      out.append(py::make_tuple(m_result->cnt_names[i], m_result->cnt_viols[i]));
+        py::list out;
+        int n_cnts = m_result->cnt_names.size();
+        for (int i = 0; i < n_cnts; ++i)
+        {
+        out.append(py::make_tuple(m_result->cnt_names[i], m_result->cnt_viols[i]));
+        }
+        return out;
     }
-    return out;
-  }
-  py::object GetTraj()
-  {
-    TrajArray& traj = m_result->traj;
-    py::object out = np_mod.attr("empty")(py::make_tuple(traj.rows(), traj.cols()));
-    for (int i = 0; i < traj.rows(); ++i)
+    py::object GetTraj()
     {
-      for (int j = 0; j < traj.cols(); ++j)
-      {
-        out[i][j] = traj(i, j);
-      }
+        TrajArray& traj = m_result->traj;
+        py::object out = np_mod.attr("empty")(py::make_tuple(traj.rows(), traj.cols()));
+        for (int i = 0; i < traj.rows(); ++i)
+        {
+        for (int j = 0; j < traj.cols(); ++j)
+        {
+            out[i][j] = traj(i, j);
+        }
+        }
+        return out;
     }
-    return out;
-  }
-  py::object __str__() { return GetCosts().attr("__str__")() + GetConstraints().attr("__str__")(); }
+    py::object GetStatus()
+    {
+        py::list out;
+        out.append(m_result->status);
+        return out;
+    }
+    py::object __str__() { return GetStatus().attr("__str__")() + GetCosts().attr("__str__")() + GetConstraints().attr("__str__")(); }
 };
 
 PyTrajOptResult PyOptimizeProblem(PyTrajOptProb& prob) 
@@ -297,60 +305,47 @@ PyTrajOptResult PyOptimizeProblem(PyTrajOptProb& prob)
 
 BOOST_PYTHON_MODULE(ctrajoptpy)
 {
-  np_mod = py::import("numpy");
+    np_mod = py::import("numpy");
 
-  // py::object openravepy = py::import("openravepy");
+    py::class_<PyTrajOptProb>("TrajOptProb", py::no_init)
+        .def("AddConstraint",
+            &PyTrajOptProb::AddConstraint1,
+            "Add constraint from python function (using numerical "
+            "differentiation)",
+            (py::arg("f"), "var_ijs", "constraint_type", "name"))
+        .def("AddConstraint",
+            &PyTrajOptProb::AddConstraint2,
+            "Add constraint from python error function and analytic derivative",
+            (py::arg("f"), "dfdx", "var_ijs", "constraint_type", "name"))
+        .def("AddCost",
+            &PyTrajOptProb::AddCost1,
+            "Add cost from python "
+            "scalar-valued function (using "
+            "numerical differentiation)",
+            (py::arg("func"), "var_ijs", "name"))
+        .def("AddErrorCost",
+            &PyTrajOptProb::AddErrCost1,
+            "Add error cost from python vector-valued error function (using "
+            "numerical differentiation)",
+            (py::arg("f"), "var_ijs", "penalty_type", "name"))
+        .def("AddErrorCost",
+            &PyTrajOptProb::AddErrCost2,
+            "Add error cost from python vector-valued error function and "
+            "analytic derivative",
+            (py::arg("f"), "dfdx", "var_ijs", "penalty_type", "name"));
 
-  // std::string pyversion = py::extract<std::string>(openravepy.attr("__version__"));
-  // if (OPENRAVE_VERSION_STRING != pyversion)
-  // {
-  //   PRINT_AND_THROW("the openrave on your pythonpath is different from the "
-  //                   "openrave version that trajopt links to!");
-  // }
+    py::def("ConstructProblem", &PyConstructProblem, "create problem from JSON string");
+    py::def("OptimizeProblem", &PyOptimizeProblem);
 
-  py::class_<PyTrajOptProb>("TrajOptProb", py::no_init)
-      // .def("GetDOFIndices", &PyTrajOptProb::GetDOFIndices)
-      // .def("SetRobotActiveDOFs",
-      //      &PyTrajOptProb::SetRobotActiveDOFs,
-      //      "Sets the active DOFs of the robot to the DOFs in the optimization "
-      //      "problem")
-      .def("AddConstraint",
-          &PyTrajOptProb::AddConstraint1,
-          "Add constraint from python function (using numerical "
-          "differentiation)",
-          (py::arg("f"), "var_ijs", "constraint_type", "name"))
-      .def("AddConstraint",
-          &PyTrajOptProb::AddConstraint2,
-          "Add constraint from python error function and analytic derivative",
-          (py::arg("f"), "dfdx", "var_ijs", "constraint_type", "name"))
-      // .def("AddCost",
-      //      &PyTrajOptProb::AddCost1,
-      //      "Add cost from python "
-      //      "scalar-valued function (using "
-      //      "numerical differentiation)",
-      //      (py::arg("func"), "var_ijs", "name"))
-      .def("AddErrorCost",
-          &PyTrajOptProb::AddErrCost1,
-          "Add error cost from python vector-valued error function (using "
-          "numerical differentiation)",
-          (py::arg("f"), "var_ijs", "penalty_type", "name"))
-      .def("AddErrorCost",
-          &PyTrajOptProb::AddErrCost2,
-          "Add error cost from python vector-valued error function and "
-          "analytic derivative",
-          (py::arg("f"), "dfdx", "var_ijs", "penalty_type", "name"));
+    py::class_<PyTrajOptResult>("TrajOptResult", py::no_init)
+        .def("GetCosts", &PyTrajOptResult::GetCosts)
+        .def("GetConstraints", &PyTrajOptResult::GetConstraints)
+        .def("GetTraj", &PyTrajOptResult::GetTraj)
+        .def("GetStatus", &PyTrajOptResult::GetStatus)
+        .def("__str__", &PyTrajOptResult::__str__);
 
-  py::def("ConstructProblem", &PyConstructProblem, "create problem from JSON string");
-  py::def("OptimizeProblem", &PyOptimizeProblem);
-
-  py::class_<PyTrajOptResult>("TrajOptResult", py::no_init)
-      .def("GetCosts", &PyTrajOptResult::GetCosts)
-      .def("GetConstraints", &PyTrajOptResult::GetConstraints)
-      .def("GetTraj", &PyTrajOptResult::GetTraj)
-      .def("__str__", &PyTrajOptResult::__str__);
-
-  py::def("greet", greet);
-  py::def("get_json_file", GetJsonFile);
+    py::def("greet", greet);
+    py::def("get_json_file", GetJsonFile);
   // py::class_<PyCollisionChecker>("CollisionChecker", py::no_init)
   //     .def("AllVsAll", &PyCollisionChecker::AllVsAll)
   //     .def("BodyVsAll", &PyCollisionChecker::BodyVsAll)

@@ -86,6 +86,7 @@ struct TRAJOPT_API TrajOptResult
   std::vector<std::string> cost_names, cnt_names;
   DblVec cost_vals, cnt_viols;
   TrajArray traj;
+  int status;
   TrajOptResult(sco::OptResults& opt, TrajOptProb& prob);
 };
 
