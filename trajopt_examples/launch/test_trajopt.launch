@@ -5,7 +5,9 @@
     <arg name="trajopt_description" default="trajopt_description"/>
 
 
-    <param name="$(arg trajopt_description)" textfile="$(find trajopt_examples)/config/test_plan.json"/>
+    <!-- <param name="$(arg trajopt_description)" textfile="$(find trajopt_examples)/config/test_plan.json"/> -->
+    <param name="$(arg trajopt_description)" textfile="$(find trajopt_ros)/config/trajopt.json"/>
+
 
     <!-- Load Robot Model    -->
     <param name="robot_description"  command="$(find xacro)/xacro --inorder $(find trajopt_examples)/assets/xarm6/xarm6_with_gripper.urdf"/>
