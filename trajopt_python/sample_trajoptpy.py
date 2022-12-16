@@ -23,13 +23,14 @@ request = {
 				"type": "stationary",
 			}
         }
+joint_names = ["joint1", "joint2", "joint3", "joint4", "joint5", "joint6"]
 JSON_FILE_NAME = "/home/janne/ros_ws/ferl/src/trajopt/trajopt_ros/config/trajopt_test.json"
 
 if __name__ == "__main__":
 	print(trajoptpy.greet())
 
 	s = json.dumps(request)
-	prob = trajoptpy.ConstructProblem(s)
+	prob = trajoptpy.ConstructProblem(s, [0.94, -0.5, -0.4, 0.82, -0.7, -0.63], joint_names)
 	result = trajoptpy.OptimizeProblem(prob)
 	print(result.GetTraj())
 
