@@ -1,8 +1,8 @@
 #ifndef TRAJOPT_ACTION_SERVER_H
 #define TRAJOPT_ACTION_SERVER_H
 
-#include "trajopt_ros/GetTrajFromTrajOpt.h"
 #include <ros/ros.h>
+#include "trajopt_ros/GetTrajFromTrajOpt.h"
 
 #include <new>
 
