@@ -528,7 +528,7 @@
   </joint>
   <link name="link_tcp"/>
   <joint name="joint_tcp" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0.172"/>
+    <origin rpy="3.14159 -1.5708 0" xyz="0 0 0.172"/>
     <parent link="xarm_gripper_base_link"/>
     <child link="link_tcp"/>
   </joint>
