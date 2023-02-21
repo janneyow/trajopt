@@ -67,7 +67,7 @@ Basic info:
 
 Init info:
 *Note start state is given by ferl_mj's config file*
-- Increase reliability with multiple initializations to decrease probaility of converging to a local minimum that is not collision-free.
+- Increase reliability with multiple initializations to decrease probability of converging to a local minimum that is not collision-free.
 - **type**(str): type of initialization. valid values are
     - *"stationary"*: initializes entire trajectory to current joint states of the robot. No data is needed
     - *"given_traj"*: the entire initial trajectory must be provided in the **data** member
