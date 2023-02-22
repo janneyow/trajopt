@@ -5,8 +5,8 @@
     <arg name="trajopt_description" default="trajopt_description"/>
 
 
-    <!-- <param name="$(arg trajopt_description)" textfile="$(find trajopt_examples)/config/test_plan.json"/> -->
-    <param name="$(arg trajopt_description)" textfile="$(find trajopt_ros)/config/trajopt.json"/>
+    <param name="$(arg trajopt_description)" textfile="$(find trajopt_examples)/config/test_plan.json"/>
+    <!-- <param name="$(arg trajopt_description)" textfile="$(find trajopt_ros)/config/trajopt.json"/> -->
 
 
     <!-- Load Robot Model    -->
