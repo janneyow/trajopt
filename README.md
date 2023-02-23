@@ -75,14 +75,19 @@ Init info:
 - **data** (trajArray, optional): Array containing the initialization information
 - **endpoint** (array, optional): joint states for the end point
 
-Costs:
+Costs and Constraints: *Refer to problem_description.hpp for their term_type*
 - **type**
+    - **joint_pos**
     - **joint_vel**
+    - **joint_acc**
+    - **joint_jerk**
+- *Only added as costs in Tesseract's implementation, original author's implementation only includes the following as constraints* 
+    - **cart_pose** 
+    - **dynamic_cart_pose** - for when the goal frame is not fixed in space
+    - **cart_vel**
     - **collision**
+    - **total_time**
 
-Constraints:
-- **type**
-    - **cart_pose**
 
 ### Examples
 1. Moving arm to a joint-position target, set constraints and init_info
@@ -104,6 +109,8 @@ Constraints:
   }
 ```
 2. Moving arm to one or many pose targets, set constraints. Init info can be left as **"stationary"**
+- Alternatively, provide a joint space trajectory as a seed in init_info, then include the cartesian pose targets as costs. 
+
 ```
 ...
  "constraints" :
