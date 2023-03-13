@@ -25,6 +25,13 @@ sphinx-build . output
 Now open gh_pages/output/index.rst and remove *output* directory before commiting changes.
 
 ## Installation
+- Install [tesseract](https://github.com/janneyow/tesseract)
+  - In the same workspace:
+    ```bash
+    git clone https://github.com/ros-industrial/ros_industrial_cmake_boilerplate # this is required for tesseract
+    git clone -b noetic https://github.com/janneyow/tesseract
+    git submodule update --init --recursive
+    ```
 - If pyconfig.h cannot be found, locate your python include path
 ```bash
 find /usr/include -name pyconfig.h 
@@ -42,12 +49,14 @@ catkin config -DPYTHON_EXECUTABLE=~/anaconda3/envs/mujoco/bin/python3.10 -DPYTHO
 - To speed up trajopt, run:
 ```bash
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
+catkin build
 ```
 
 When running in Ubuntu 20.04 (*Note: these have been updated in this repo*)
 1. Need to update tesseract/tesseract_rviz/src/render_tools/env/robot_link.cpp
 - Change "rviz" to Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
-2. Update compile options to c++14
+1. Update compile options to c++14
+
 
 ## Running an example
 ```bash
