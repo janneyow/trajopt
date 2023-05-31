@@ -208,8 +208,13 @@ Json::Value readJsonFile(const std::string& doc)
 PyTrajOptProb PyConstructProblem(const std::string& json_string, py::list pos, py::list joint_names)
 {    
     // Initialize the environment
-    std::string urdf_file_path = "/home/janne/ros_ws/ferl/src/trajopt/trajopt_ros/assets/xarm6/xarm6_with_gripper.urdf";
-    std::string srdf_file_path = "/home/janne/ros_ws/ferl/src/trajopt/trajopt_ros/assets/xarm6/xarm6_with_gripper.srdf";
+        // Initialize the environment
+    std::string pkg_path = ros::package::getPath("trajopt_ros");
+
+    std::string urdf_file_path = pkg_path + "/assets/xarm6/xarm6_with_gripper.urdf";
+    std::string srdf_file_path = pkg_path + "/assets/xarm6/xarm6_with_gripper.srdf";
+    //
+    std::cout << "URDF FILE PATH: " << urdf_file_path << std::endl;
 
     // for env setup, to write python class to replace this
     urdf::ModelInterfaceSharedPtr urdf_model;

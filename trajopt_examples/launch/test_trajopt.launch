@@ -10,10 +10,10 @@
 
 
     <!-- Load Robot Model    -->
-    <param name="robot_description"  command="$(find xacro)/xacro --inorder $(find trajopt_examples)/assets/xarm6/xarm6_with_gripper.urdf"/>
+    <param name="robot_description"  textfile="$(find trajopt_ros)/assets/xarm6/xarm6_with_gripper.urdf"/>
 
     <!-- Load Robot Semantic -->
-    <param name="robot_description_semantic" textfile="$(find trajopt_examples)/assets/xarm6/xarm6_with_gripper.srdf" />
+    <param name="robot_description_semantic" textfile="$(find trajopt_ros)/assets/xarm6/xarm6_with_gripper.srdf" />
 
     <!-- Launch GUI to drive joints   -->
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
