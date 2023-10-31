@@ -32,22 +32,29 @@ Now open gh_pages/output/index.rst and remove *output* directory before commitin
     git clone -b noetic https://github.com/janneyow/tesseract
     git submodule update --init --recursive
     ```
-- If pyconfig.h cannot be found, locate your python include path
-```bash
-find /usr/include -name pyconfig.h 
-  # returns /usr/include/python3.8/pyconfig.h
-export CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/usr/include/python3.8/" 
-  # you can add this line to your bashrc
-```
-<!-- only for PyObject -->
-<!-- - trajopt_ros depends on torch in python, set up catkin config to import torch
-- no need this, just need to set pythonhome 
-```
-catkin config -DPYTHON_EXECUTABLE=~/anaconda3/envs/mujoco/bin/python3.10 -DPYTHON_INCLUDE_DIR=~/anaconda3/envs/mujoco/include/python3.10 -DPYTHON_LIBRARY=~/anaconda3/envs/mujoco/lib/libpython3.10.so -DCMAKE_BUILD_TYPE=Release
-``` -->
+  - If pyconfig.h cannot be found, locate your python include path
+    ```bash
+    find /usr/include -name pyconfig.h 
+      # returns /usr/include/python3.8/pyconfig.h
+    export CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/usr/include/python3.8/" 
+      # you can add this line to your bashrc
+    ```
+    <!-- only for PyObject -->
+    <!-- - trajopt_ros depends on torch in python, set up catkin config to import torch
+    - no need this, just need to set pythonhome 
+    ```
+    catkin config -DPYTHON_EXECUTABLE=~/anaconda3/envs/mujoco/bin/python3.10 -DPYTHON_INCLUDE_DIR=~/anaconda3/envs/mujoco/include/python3.10 -DPYTHON_LIBRARY=~/anaconda3/envs/mujoco/lib/libpython3.10.so -DCMAKE_BUILD_TYPE=Release
+    ``` -->
 
-- To speed up trajopt, run:
+- Clone this package:
+  - In the same workspace:
+  ```bash
+      git clone -b noetic https://github.com/janneyow/trajopt
+  ```
+
+- To build:
 ```bash
+# to speed up trajopt
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
 catkin build
 ```
