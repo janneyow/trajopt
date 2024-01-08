@@ -234,14 +234,14 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="file:///home/janne/phd1/xarm/src/xarm/xarm_ros/xarm_description/meshes/ft_sensor/visual/ft_sensor_scaled.STL"/>
+        <mesh filename="package://xarm_description/meshes/ft_sensor/visual/ft_sensor_scaled.STL"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <material name="Silver"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/janne/phd1/xarm/src/xarm/xarm_ros/xarm_description/meshes/ft_sensor/collision/ft_sensor_scaled.STL"/>
+        <mesh filename="package://xarm_description/meshes/ft_sensor/collision/ft_sensor_scaled.STL"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <material name="Silver"/>
